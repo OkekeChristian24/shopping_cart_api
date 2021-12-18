@@ -17,9 +17,21 @@ module.exports = {
             }
         );
     },
-    getCartByUserId: (userId, callBack) => {
+    getCartById: (cartId, callBack) => {
         pool.query(
             'SELECT id, user_id, total_quantity, total_price FROM carts WHERE id = ? ',
+            [cartId],
+            (error, results, fields) => {
+                if(error){
+                    return callBack(error);
+                }
+                return callBack(null, results);
+            }
+        );
+    },
+    getCartByUserId: (userId, callBack) => {
+        pool.query(
+            'SELECT id, user_id, total_quantity, total_price FROM carts WHERE user_id = ? ',
             [userId],
             (error, results, fields) => {
                 if(error){
@@ -31,10 +43,10 @@ module.exports = {
     },
     updateCart: (cartId, data, callBack) => {
         pool.query(
-            'UPDATE carts SET total_quantity = ?, total_price = ? WHERE id = ?',
+            'UPDATE carts SET total_quantity = total_quantity + ?, total_price = total_price + ? WHERE id = ?',
             [
-                data.total_quantity,
-                data.total_price,
+                data.quantity,
+                data.price,
                 cartId
             ],
             (error, results, fields) => {
