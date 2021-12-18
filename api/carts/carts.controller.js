@@ -47,8 +47,6 @@ module.exports = {
                         message: 'Invalid response'
                     });
                 }
-                console.log(itemResults);
-                console.log(results[0]);
                 const cartDetails = results[0].items = itemResults;
                 return res.status(200).json({
                     success: 1,

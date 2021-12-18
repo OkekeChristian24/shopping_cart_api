@@ -9,7 +9,7 @@ module.exports = {
                 data.description,
                 data.category,
                 data.price,
-                qty_available
+                data.qty_available
             ],
             (error, results, fields) => {
                 if(error){
