@@ -73,5 +73,18 @@ module.exports = {
                 return callBack(null, results);
             }
         );
+    },
+    deleteAllItemsOfACart: (cartId, callBack) => {
+        pool.query(
+            'DELETE * FROM cart_items WHERE cart_id = ?',
+            [cartId],
+            (error, results, fields) => {
+                if (error) {
+                    return callBack(error);
+                }
+                console.log(results);
+                return callBack(null, results);
+            }
+        );
     }
 };
