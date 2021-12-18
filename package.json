@@ -1,0 +1,21 @@
+{
+  "name": "shoppingcart",
+  "version": "1.0.0",
+  "description": "Shoppin cart API for Paystack task",
+  "main": "server.js",
+  "repository": "https://github.com/OkekeChristian24/shopping_cart_api",
+  "author": "Okeke Christian",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
