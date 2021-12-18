@@ -1,7 +1,7 @@
 const { pool } = require('../../config/database');
 
 module.exports = {
-    registerUser: (data, callBack) => {
+    createUser: (data, callBack) => {
         pool.query(
             'INSERT INTO users(first_name, last_name, email, password) VALUES(?, ?, ?, ?)',
             [
@@ -18,10 +18,10 @@ module.exports = {
             }
         );
     },
-    getUsers: callBack => {
+    getUserById: (id, callBack) => {
         pool.query(
-            'SELECT id, first_name, last_name, email FROM users',
-            [],
+            'SELECT id, first_name, last_name, email, password FROM users WHERE id = ?',
+            [id],
             (error, results, fields) => {
                 if(error){
                     return callBack(error);
@@ -29,11 +29,12 @@ module.exports = {
                 return callBack(null, results);
             }
         );
+        
     },
-    getUserById: (id, callBack) => {
+    getUserByEmail: (email, callBack) => {
         pool.query(
-            'SELECT id, first_name, last_name, email, password FROM users WHERE id = ?',
-            [id],
+            'SELECT id, first_name, last_name, email, password FROM users WHERE email = ?',
+            [email],
             (error, results, fields) => {
                 if(error){
                     return callBack(error);
