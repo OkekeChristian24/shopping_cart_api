@@ -43,7 +43,7 @@ module.exports = {
     },
     updateCart: (cartId, data, callBack) => {
         pool.query(
-            'UPDATE carts SET total_quantity = total_quantity + ?, total_price = total_price + ? WHERE id = ?',
+            'UPDATE carts SET total_quantity = ?, total_price = ? WHERE id = ?',
             [
                 data.quantity,
                 data.price,

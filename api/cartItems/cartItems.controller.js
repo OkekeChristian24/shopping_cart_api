@@ -157,9 +157,10 @@ module.exports = {
     updateCartItem: (req, res) => {
         const cartItemId = req.params.id;
         const cartId = req.body.cart_id;
-        const quantity = req.body.quantity;
-        const price = req.body.price;
-        updateCartItemQty(cartItemId, quantity, (err, results) => {
+        const newItemQty = req.body.new_item_qty;
+        const newTotalQty = req.body.new_total_qty;
+        const newTotalPrice = req.body.new_total_price;
+        updateCartItemQty(cartItemId, newItemQty, (err, results) => {
             if(err){
                 return res.status(400).json({
                     success: 0,
@@ -173,8 +174,52 @@ module.exports = {
                 });
             }
 
-            updateCart(cartId);
+            const newCartData = {
+                quantity: newTotalQty,
+                price: newTotalPrice
+            };
+
+            updateCart(cartId, newCartData, (cartErr, cartResults) => {
+                if(cartErr){
+                    return res.status(400).json({
+                        success: 0,
+                        message: 'Query error'
+                    });
+                }
+                if(!cartResults){
+                    return res.status(502).json({
+                        success: 0,
+                        message: 'Invalid response'
+                    });
+                }
+
+                return res.status(200).json({
+                    success: 1,
+                    message: 'Cart updated successfully'
+                });
+            });
         });
     },
-    removeItemFromCart: (req, res) => {}
+    removeItemFromCart: (req, res) => {
+        const cartItemId = req.params.id;
+        deleteCartItem(cartItemId, (err, results) => {
+            if(err){
+                return res.status(400).json({
+                    success: 0,
+                    message: 'Query error'
+                });
+            }
+            if(!results){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+
+            return res.status(200).json({
+                success: 1,
+                message: 'Cart item deleted successfully'
+            });
+        });    
+    }
 };
