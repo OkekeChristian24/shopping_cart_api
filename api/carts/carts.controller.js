@@ -13,12 +13,14 @@ module.exports = {
         const cartId = req.params.id;
         getCartById(cartId, (err, results) => {
             if(err){
+                console.log(err);
                 return res.status(400).json({
                     success: 0,
                     message: 'Query error'
                 });
             }
             if(!results){
+                console.log(results);
                 return res.status(502).json({
                     success: 0,
                     message: 'Invalid response'
@@ -32,17 +34,21 @@ module.exports = {
             }
             getCartItems(cartId, (itemErr, itemResults) => {
                 if(itemErr){
+                    console.log(itemErr);
                     return res.status(400).json({
                         success: 0,
                         message: 'Query error'
                     });
                 }
                 if(!itemResults){
+                    console.log(itemResults);
                     return res.status(502).json({
                         success: 0,
                         message: 'Invalid response'
                     });
                 }
+                console.log(itemResults);
+                console.log(results[0]);
                 const cartDetails = results[0].items = itemResults;
                 return res.status(200).json({
                     success: 1,
