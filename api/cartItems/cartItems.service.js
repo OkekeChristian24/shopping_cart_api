@@ -28,28 +28,32 @@ module.exports = {
         }
     },
     updateCartItemQty: (cartItemId, quantity, callBack) => {
-        'UPDATE cart_items SET quantity = ? WHERE id = ?',
-        [
-            quantity,
-            cartItemId
-        ],
-        (error, results, fields) => {
-            if (error) {
-                return callBack(error);
+        pool.query(
+            'UPDATE cart_items SET quantity = ? WHERE id = ?',
+            [
+                quantity,
+                cartItemId
+            ],
+            (error, results, fields) => {
+                if (error) {
+                    return callBack(error);
+                }
+                console.log(results);
+                return callBack(null, results);
             }
-            console.log(results);
-            return callBack(null, results);
-        }
+        );
     },
     deleteCartItem: (cartItemId, callBack) => {
-        'DELETE * FROM cart_items WHERE id = ?',
-        [cartItemId],
-        (error, results, fields) => {
-            if (error) {
-                return callBack(error);
+        pool.query(
+            'DELETE * FROM cart_items WHERE id = ?',
+            [cartItemId],
+            (error, results, fields) => {
+                if (error) {
+                    return callBack(error);
+                }
+                console.log(results);
+                return callBack(null, results);
             }
-            console.log(results);
-            return callBack(null, results);
-        }
+        );
     }
 };
