@@ -1,16 +1,6 @@
 const { body } = require('express-validator');
 
 const validateCreateItem = [
-    body("cart_id", "No cart id")
-    .exists({checkFalsy: true})
-    .not().isEmpty()
-    .custom((value, { req }) => {
-
-        if(!(Number.isInteger(value) && value > 0)){
-            throw new Error('Invalid cart id');
-        }
-        return true;
-    }),
     body("product_id", "No product id")
     .exists({checkFalsy: true})
     .not().isEmpty()

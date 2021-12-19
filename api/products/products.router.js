@@ -8,11 +8,16 @@ const {
 } = require('./products.controller');
 const router = require('express').Router();
 
+const {
+    validateCreateProduct,
+    validateProductEdit,
+    validateQtyEdit
+} = require('../../validations/productValidation');
 
-router.post('/', createProduct);
+router.post('/', validateCreateProduct, createProduct);
 router.get('/:id', getProductById);
-router.put('/:id', updateProduct);
-router.put('/qty/:id', updateProductQty);
+router.put('/:id', validateProductEdit, updateProduct);
+router.put('/qty/:id', validateQtyEdit, updateProductQty);
 router.delete('/:id', deleteProduct);
 
 

@@ -32,7 +32,7 @@ module.exports = {
     },
     getItemFromCart: (data, callBack) => {
         pool.query(
-            'SELECT cart_items.id, cart_items.cart_id, cart_items.product_id, cart_items.quantity, products.id, products.name, products.description, products.category, products.price FROM cart_items INNER JOIN products ON cart_items.product_id = products.id WHERE cart_items.cart_id = ? AND cart_items.product_id = ?',
+            'SELECT cart_items.id, cart_items.cart_id, cart_items.product_id, cart_items.quantity, products.id, products.name, products.description, products.category, products.price FROM cart_items LEFT JOIN products ON cart_items.product_id = products.id WHERE cart_items.cart_id = ? AND cart_items.product_id = ?',
             [
                 data.cart_id,
                 data.product_id
@@ -41,6 +41,7 @@ module.exports = {
                 if(error){
                     return callBack(error);
                 }
+                console.log("Results: ", results);
                 return callBack(null, results);
             }
         );

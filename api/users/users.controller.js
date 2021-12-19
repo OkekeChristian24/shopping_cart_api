@@ -65,6 +65,7 @@ module.exports = {
         });
     },
     loginUser: (req, res) => {
+        console.log("Secret: ", process.env.LOGIN_SECRET);
         const data = req.body;
         getUserByEmail(data.email, (err, results) => {
             if(err){
@@ -101,8 +102,7 @@ module.exports = {
                 return res.status(200).json({
                     success: 1,
                     message: 'Login successful',
-                    token: jsontoken,
-                    data: results
+                    token: jsontoken
                 });
             } else {
                 return res.status(200).json({

@@ -1,12 +1,14 @@
-const router = require('express').Router();
-
 // Import cart controllers
 const {
     getCartDetails,
     deleteCart
 } = require('./carts.controller');
 
-router.get('/:id', getCartDetails);
-router.delete('/:id', deleteCart);
+const router = require('express').Router();
+
+const { checkToken } = require('../../authorizations/tokenAuth');
+
+router.get('/:id', checkToken, getCartDetails);
+router.delete('/:id', checkToken, deleteCart);
 
 module.exports = router;
