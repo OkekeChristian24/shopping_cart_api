@@ -59,16 +59,11 @@ module.exports = {
             }
 
             if(cart.length == 0){ // Create a new cart if there's no cart for the user
-                const cartData = {
-                    user_id: userId,
-                    total_quantity: req.body.quantity,
-                    total_price: req.body.item_price * req.body.quantity
-                };
 
-                // Create a new cart
-                createCart(cartData, (err, results) => {
+                // Get product price
+                getProductById(req.body.product_id, (err, results) => {
                     if(err){
-                        console.log(err);
+                        console.log(getErr);
                         return res.status(400).json({
                             success: 0,
                             message: 'Query error'
@@ -81,38 +76,42 @@ module.exports = {
                         });
                     }
 
-                    const cartId = results.insertId;
-                    // Get product price
-                    getProductById(req.body.product_id, (getErr, getResults) => {
-                        if(getErr){
-                            console.log(getErr);
-                            return res.status(400).json({
-                                success: 0,
-                                message: 'Query error'
-                            });
-                        }
-                        if(!getResults){
-                            return res.status(502).json({
-                                success: 0,
-                                message: 'Invalid response'
-                            });
-                        }
+                    if(results.length === 0){
+                        return res.status(200).json({
+                            success: 0,
+                            message: 'Product does not exist'
+                        });
+                    }
 
-                        if(getResults.length === 0){
-                            return res.status(200).json({
-                                success: 0,
-                                message: 'Product does not exist'
-                            });
-                        }
-
-                        if(getResults.length === 1){
-
-                            // Add the item to the newly created cart
+                    if(results.length === 1){
+                        const itemPrice = results[0].price;
+                        const cartData = {
+                            user_id: userId,
+                            total_quantity: req.body.quantity,
+                            total_price: itemPrice * req.body.quantity
+                        };
+        
+                        // Create a new cart
+                        createCart(cartData, (createErr, createResults) => {
+                            if(err){
+                                console.log(createErr);
+                                return res.status(400).json({
+                                    success: 0,
+                                    message: 'Query error'
+                                });
+                            }
+                            if(!createResults){
+                                return res.status(502).json({
+                                    success: 0,
+                                    message: 'Invalid response'
+                                });
+                            }
+        
                             const cartItemData = {
-                                cart_id: cartId,
+                                cart_id: createResults.insertId,
                                 product_id: req.body.product_id,
                                 quantity: req.body.quantity,
-                                item_price: getResults[0].price
+                                item_price: itemPrice
                             };
 
                             createCartItem(cartItemData, (itemErr, itemResults) => {
@@ -134,16 +133,15 @@ module.exports = {
                                     message: 'Item added to cart'
                                 });
                             });
-                        }
-                        if(getResults.length > 1){
-                            return res.status(400).json({
-                                success: 0,
-                                message: 'Invalid response'
-                            });
-                        }
-
-                    });
-                
+                            
+                        });
+                    }
+                    if(results.length > 1){
+                        return res.status(400).json({
+                            success: 0,
+                            message: 'Invalid response'
+                        });
+                    }
                     
                 });
             }else if(cart.length == 1){ // There's a cart for the user
@@ -199,7 +197,7 @@ module.exports = {
                                 cart_id: cartId,
                                 product_id: req.body.product_id,
                                 quantity: req.body.quantity,
-                                item_price: req.body.item_price
+                                item_price: getResults[0].price
                             };
                             createCartItem(cartItemData, (itemErr, itemResults) => {
                                 if(itemErr){
@@ -221,6 +219,7 @@ module.exports = {
                                     quantity: cartItemData.quantity,
                                     price: cartItemData.item_price * cartItemData.quantity
                                 };
+
                                 increaseCartData(cartId, updateData, (updateErr, updateResults) => {
                                     if(updateErr){
                                         console.log(updateErr);
@@ -254,13 +253,6 @@ module.exports = {
                             message: 'Item already in cart'
                         });
                     }
-                    // console.log("Cart item: ", cartItem);
-                    // console.log("Cart length: ", cartItem.length);
-                    // return res.status(502).json({
-                    //     success: 0,
-                    //     message: 'Invalid response'
-                    // });
-                
                     
                 });
                    
