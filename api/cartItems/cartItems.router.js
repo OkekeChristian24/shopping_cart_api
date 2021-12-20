@@ -2,6 +2,8 @@
 const {
     addItemToCart,
     updateCartItem,
+    decreaseCartItem,
+    increaseCartItem,
     removeItemFromCart
 } = require('./cartItems.controller');
 
@@ -19,6 +21,8 @@ const { checkToken } = require('../../authorizations/tokenAuth');
 // including the cart items
 router.post('/:id', checkToken, validateCreateItem, addItemToCart);
 router.put('/:id', checkToken, validateQtyEdit, updateCartItem);
+router.put('/dec/:id', checkToken, validateQtyEdit, decreaseCartItem);
+router.put('/inc/:id', checkToken, validateQtyEdit, increaseCartItem);
 router.delete('/:id', checkToken, removeItemFromCart);
 
 module.exports = router;

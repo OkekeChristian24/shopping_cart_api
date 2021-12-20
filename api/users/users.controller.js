@@ -65,7 +65,6 @@ module.exports = {
         });
     },
     loginUser: (req, res) => {
-        console.log("Secret: ", process.env.LOGIN_SECRET);
         const data = req.body;
         getUserByEmail(data.email, (err, results) => {
             if(err){

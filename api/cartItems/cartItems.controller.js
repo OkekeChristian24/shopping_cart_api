@@ -5,6 +5,9 @@ const {
     createCartItem,
     getCartItems,
     getItemFromCart,
+    getCartItemById,
+    increaseCartItemQty,
+    decreaseCartItemQty,
     updateCartItemQty,
     deleteCartItem,
 } = require('./cartItems.service');
@@ -13,6 +16,8 @@ const {
 const {
     createCart,
     getCartByUserId,
+    increaseCartData,
+    decreaseCartData,
     updateCart,
     deleteCart
 } = require('../carts/carts.service');
@@ -57,7 +62,7 @@ module.exports = {
                 const cartData = {
                     user_id: userId,
                     total_quantity: req.body.quantity,
-                    total_price: req.body.item_price
+                    total_price: req.body.item_price * req.body.quantity
                 };
 
                 // Create a new cart
@@ -76,13 +81,11 @@ module.exports = {
                         });
                     }
 
-                    console.log(results);
-                    const cartId = results.id;
-
+                    const cartId = results.insertId;
                     // Get product price
                     getProductById(req.body.product_id, (getErr, getResults) => {
                         if(getErr){
-                            console.log(err);
+                            console.log(getErr);
                             return res.status(400).json({
                                 success: 0,
                                 message: 'Query error'
@@ -101,7 +104,6 @@ module.exports = {
                                 message: 'Product does not exist'
                             });
                         }
-                        /////
 
                         if(getResults.length === 1){
 
@@ -115,6 +117,7 @@ module.exports = {
 
                             createCartItem(cartItemData, (itemErr, itemResults) => {
                                 if(itemErr){
+                                    console.log(itemErr);
                                     return res.status(400).json({
                                         success: 0,
                                         message: 'Query error'
@@ -166,14 +169,12 @@ module.exports = {
                         });
                     }
 
-                    console.log("Cart item: ", cartItem);
-
-                    if(cartItem.length == 0){ // Add a new item to the cart if the item is not there
+                    if(cartItem.length === 0){ // Add a new item to the cart if the item is not there
                         
                         // Get product price
                         getProductById(req.body.product_id, (getErr, getResults) => {
                             if(getErr){
-                                console.log(err);
+                                console.log(getErr);
                                 return res.status(400).json({
                                     success: 0,
                                     message: 'Query error'
@@ -202,7 +203,7 @@ module.exports = {
                             };
                             createCartItem(cartItemData, (itemErr, itemResults) => {
                                 if(itemErr){
-                                console.log(itemErr);
+                                    console.log(itemErr);
                                     return res.status(400).json({
                                         success: 0,
                                         message: 'Query error'
@@ -218,17 +219,18 @@ module.exports = {
                                 // Update cart total quantity and total price
                                 const updateData = {
                                     quantity: cartItemData.quantity,
-                                    price: cartItemData.item_price
+                                    price: cartItemData.item_price * cartItemData.quantity
                                 };
-                                updateCart(cartId, updateData, (updateErr, updateResults) => {
+                                increaseCartData(cartId, updateData, (updateErr, updateResults) => {
                                     if(updateErr){
-                                        console.log(err);
+                                        console.log(updateErr);
                                         return res.status(400).json({
                                             success: 0,
                                             message: 'Query error'
                                         });
                                     }
                                     if(!updateResults){
+                                        console.log(updateResults);
                                         return res.status(502).json({
                                             success: 0,
                                             message: 'Invalid response'
@@ -252,11 +254,12 @@ module.exports = {
                             message: 'Item already in cart'
                         });
                     }
-                
-                    return res.status(502).json({
-                        success: 0,
-                        message: 'Invalid response'
-                    });
+                    // console.log("Cart item: ", cartItem);
+                    // console.log("Cart length: ", cartItem.length);
+                    // return res.status(502).json({
+                    //     success: 0,
+                    //     message: 'Invalid response'
+                    // });
                 
                     
                 });
@@ -274,6 +277,21 @@ module.exports = {
         });
     },
     updateCartItem: (req, res) => {
+        // Validate incoming data
+        const errorsArr = [];
+        const validationErrors = validationResult(req);
+        if(!validationErrors.isEmpty()){
+            const errors = Object.values(validationErrors.mapped());
+            errors.forEach(eachError => {
+                errorsArr.push(eachError.msg);
+            });
+            return res.status(400).json({
+                success: 0,
+                isDataValid: 0,
+                message: errorsArr
+            });
+        }
+
         const cartItemId = req.params.id;
         const cartId = req.body.cart_id;
         const newItemQty = req.body.new_item_qty;
@@ -321,9 +339,195 @@ module.exports = {
             });
         });
     },
+    increaseCartItem: (req, res) => {
+        // Validate incoming data
+        const errorsArr = [];
+        const validationErrors = validationResult(req);
+        if(!validationErrors.isEmpty()){
+            const errors = Object.values(validationErrors.mapped());
+            errors.forEach(eachError => {
+                errorsArr.push(eachError.msg);
+            });
+            return res.status(400).json({
+                success: 0,
+                isDataValid: 0,
+                message: errorsArr
+            });
+        }
+
+        const cartItemId = req.params.id;
+        const quantity = req.body.quantity;
+        getCartItemById(cartItemId, (err, results) => {
+            if(err){
+                console.log(err);
+                return res.status(400).json({
+                    success: 0,
+                    message: 'Query error'
+                });
+            }
+            if(!results){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+            if(results.length === 0){
+                return res.status(200).json({
+                    success: 0,
+                    message: 'No cart item of such'
+                });
+            }
+            if(results.length > 1){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+
+            if(results.length === 1){
+                const itemPrice = results[0].price;
+                const cartId = results[0].cart_id;
+                const mainPrice = quantity * itemPrice;
+                
+                increaseCartItemQty(cartItemId, quantity, (incErr, incResults) => {
+                    if(incErr){
+                        console.log(err);
+                        return res.status(400).json({
+                            success: 0,
+                            message: 'Query error'
+                        });
+                    }
+                    if(!incResults){
+                        return res.status(502).json({
+                            success: 0,
+                            message: 'Invalid response'
+                        });
+                    }
+    
+                    // Update the cart data
+                    const incData = {
+                        quantity: quantity,
+                        price: mainPrice
+                    };
+                    increaseCartData(cartId, incData, (cartErr, cartResults) => {
+                        if(cartErr){
+                            console.log(err);
+                            return res.status(400).json({
+                                success: 0,
+                                message: 'Query error'
+                            });
+                        }
+                        if(!cartResults){
+                            return res.status(502).json({
+                                success: 0,
+                                message: 'Invalid response'
+                            });
+                        }
+                        return res.status(200).json({
+                            success: 1,
+                            message: 'Cart item increased'
+                        });
+                    });
+                });
+            }
+        });
+    },
+    decreaseCartItem: (req, res) => {
+        // Validate incoming data
+        const errorsArr = [];
+        const validationErrors = validationResult(req);
+        if(!validationErrors.isEmpty()){
+            const errors = Object.values(validationErrors.mapped());
+            errors.forEach(eachError => {
+                errorsArr.push(eachError.msg);
+            });
+            return res.status(400).json({
+                success: 0,
+                isDataValid: 0,
+                message: errorsArr
+            });
+        }
+
+        const cartItemId = req.params.id;
+        const quantity = req.body.quantity;
+        getCartItemById(cartItemId, (err, results) => {
+            if(err){
+                console.log(err);
+                return res.status(400).json({
+                    success: 0,
+                    message: '1-Query error'
+                });
+            }
+            if(!results){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+            if(results.length === 0){
+                return res.status(200).json({
+                    success: 0,
+                    message: 'No cart item of such'
+                });
+            }
+            if(results.length > 1){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+
+            if(results.length === 1){
+                const price = results[0].price;
+                const cartId = results[0].cart_id;
+                const mainPrice = price * quantity;
+                decreaseCartItemQty(cartItemId, quantity, (decErr, decResults) => {
+                    if(decErr){
+                        console.log(err);
+                        return res.status(400).json({
+                            success: 0,
+                            message: '2-Query error'
+                        });
+                    }
+                    if(!decResults){
+                        return res.status(502).json({
+                            success: 0,
+                            message: 'Invalid response'
+                        });
+                    }
+                    
+                    // Update the cart data
+                    const incData = {
+                        quantity: quantity,
+                        price: mainPrice
+                    };
+                    decreaseCartData(cartId, incData, (cartErr, cartResults) => {
+                        if(cartErr){
+                            console.log(cartErr);
+                            return res.status(400).json({
+                                success: 0,
+                                message: '3-Query error'
+                            });
+                        }
+                        if(!cartResults){
+                            return res.status(502).json({
+                                success: 0,
+                                message: 'Invalid response'
+                            });
+                        }
+                        return res.status(200).json({
+                            success: 1,
+                            message: 'Cart item decreased'
+                        });
+                    });
+                });
+            }
+
+        });
+    },
     removeItemFromCart: (req, res) => {
         const cartItemId = req.params.id;
-        deleteCartItem(cartItemId, (err, results) => {
+        getCartItemById(cartItemId, (err, results) => {
             if(err){
                 console.log(err);
                 return res.status(400).json({
@@ -338,10 +542,67 @@ module.exports = {
                 });
             }
 
-            return res.status(200).json({
-                success: 1,
-                message: 'Cart item deleted successfully'
-            });
-        });    
+            if(results.length === 0){
+                return res.status(200).json({
+                    success: 0,
+                    message: 'No cart item of such'
+                });
+            }
+            if(results.length > 1){
+                return res.status(502).json({
+                    success: 0,
+                    message: 'Invalid response'
+                });
+            }
+
+            if(results.length === 1){
+                const itemQty = results[0].quantity;
+                const itemPrice = results[0].price;
+                const cartId = results[0].cart_id;
+                const mainPrice = itemQty * itemPrice;
+                
+                deleteCartItem(cartItemId, (delErr, delResults) => {
+                    if(delErr){
+                        console.log(delErr);
+                        return res.status(400).json({
+                            success: 0,
+                            message: 'Query error'
+                        });
+                    }
+                    if(!delResults){
+                        return res.status(502).json({
+                            success: 0,
+                            message: 'Invalid response'
+                        });
+                    }
+        
+                    // Update the cart data
+                    const dataDecrease = {
+                        quantity: itemQty,
+                        price: mainPrice
+                    };
+                    decreaseCartData(cartId, dataDecrease, (decErr, decResults) => {
+                        if(decErr){
+                            console.log(decErr);
+                            return res.status(400).json({
+                                success: 0,
+                                message: 'Query error'
+                            });
+                        }
+                        if(!decResults){
+                            return res.status(502).json({
+                                success: 0,
+                                message: 'Invalid response'
+                            });
+                        }
+                        return res.status(200).json({
+                            success: 1,
+                            message: 'Cart item deleted successfully'
+                        });
+                    });
+                });    
+            }
+
+        });
     }
 };

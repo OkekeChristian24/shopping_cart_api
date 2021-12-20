@@ -30,9 +30,21 @@ module.exports = {
             }
         );
     },
+    getCartItemById: (id, callBack) => {
+        pool.query(
+            'SELECT cart_items.id, cart_items.cart_id, cart_items.product_id, cart_items.quantity, products.id, products.name, products.description, products.category, products.price FROM cart_items INNER JOIN products ON cart_items.product_id = products.id WHERE cart_items.id = ?',
+            [id],
+            (error, results, fields) => {
+                if(error){
+                    return callBack(error);
+                }
+                return callBack(null, results);
+            }
+        );
+    },
     getItemFromCart: (data, callBack) => {
         pool.query(
-            'SELECT cart_items.id, cart_items.cart_id, cart_items.product_id, cart_items.quantity, products.id, products.name, products.description, products.category, products.price FROM cart_items LEFT JOIN products ON cart_items.product_id = products.id WHERE cart_items.cart_id = ? AND cart_items.product_id = ?',
+            'SELECT cart_items.id, cart_items.cart_id, cart_items.product_id, cart_items.quantity, products.id, products.name, products.description, products.category, products.price FROM cart_items INNER JOIN products ON cart_items.product_id = products.id WHERE cart_items.cart_id = ? AND cart_items.product_id = ?',
             [
                 data.cart_id,
                 data.product_id
@@ -41,7 +53,6 @@ module.exports = {
                 if(error){
                     return callBack(error);
                 }
-                console.log("Results: ", results);
                 return callBack(null, results);
             }
         );
@@ -57,33 +68,60 @@ module.exports = {
                 if (error) {
                     return callBack(error);
                 }
-                console.log(results);
+                return callBack(null, results);
+            }
+        );
+    },
+    increaseCartItemQty: (cartItemId, quantity, callBack) => {
+        pool.query(
+            'UPDATE cart_items SET quantity = quantity + ? WHERE id = ?',
+            [
+                quantity,
+                cartItemId
+            ],
+            (error, results, fields) => {
+                if (error) {
+                    return callBack(error);
+                }
+                return callBack(null, results);
+            }
+        );
+    },
+    decreaseCartItemQty: (cartItemId, quantity, callBack) => {
+        pool.query(
+            'UPDATE cart_items SET quantity = GREATEST(quantity - ?, 0) WHERE id = ?',
+            [
+                quantity,
+                cartItemId
+            ],
+            (error, results, fields) => {
+                if (error) {
+                    return callBack(error);
+                }
                 return callBack(null, results);
             }
         );
     },
     deleteCartItem: (cartItemId, callBack) => {
         pool.query(
-            'DELETE * FROM cart_items WHERE id = ?',
+            'DELETE FROM cart_items WHERE id = ?',
             [cartItemId],
             (error, results, fields) => {
                 if (error) {
                     return callBack(error);
                 }
-                console.log(results);
                 return callBack(null, results);
             }
         );
     },
     deleteAllItemsOfACart: (cartId, callBack) => {
         pool.query(
-            'DELETE * FROM cart_items WHERE cart_id = ?',
+            'DELETE FROM cart_items WHERE cart_id = ?',
             [cartId],
             (error, results, fields) => {
                 if (error) {
                     return callBack(error);
                 }
-                console.log(results);
                 return callBack(null, results);
             }
         );
