@@ -447,7 +447,7 @@ module.exports = {
                 console.log(err);
                 return res.status(400).json({
                     success: 0,
-                    message: '1-Query error'
+                    message: 'Query error'
                 });
             }
             if(!results){
@@ -478,7 +478,7 @@ module.exports = {
                         console.log(err);
                         return res.status(400).json({
                             success: 0,
-                            message: '2-Query error'
+                            message: 'Query error'
                         });
                     }
                     if(!decResults){
@@ -498,7 +498,7 @@ module.exports = {
                             console.log(cartErr);
                             return res.status(400).json({
                                 success: 0,
-                                message: '3-Query error'
+                                message: 'Query error'
                             });
                         }
                         if(!cartResults){
