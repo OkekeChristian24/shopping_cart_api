@@ -104,8 +104,11 @@ This is a documentation of an implemented shopping cart of an arbitrary ecommerc
           `:id` `number` `id of the user` `required`
         - ##### Request body
           `product_id` `id the product item` `required`
+          <br />
           `quantity` `quantity of the product item` `required`
+          <br />
           `item_price` `price of the product` `required`
+          <br />
       - ### Request example
           `http://localhost:5000/api/cartitem/1`
       - ### Response example
@@ -128,9 +131,12 @@ This is a documentation of an implemented shopping cart of an arbitrary ecommerc
         - ##### Path parameters
           `:id` `number` `id of the cart item` `required`
         - ##### Request body
-          `cart_id` `id of the cart of the user` `requires`
+          `cart_id` `id of the cart of the user` `required`
+          <br />
           `new_item_qty` `the new quantity of the product item` `required`
+          <br />
           `new_total_qty` `the total item quantity to be updated with cart` `required`
+          <br />
           `new_total_price` `the new total price as a result of the change in quantity of items` `required`
       - ### Request example
           `http://localhost:5000/api/cartitem/3`
